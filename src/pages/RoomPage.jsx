@@ -39,7 +39,7 @@ const VideoContainer = styled(Box)({
 
 export default function RoomPage() {
   const { roomCode } = useParams();
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const [hostId, setHostId] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -56,6 +56,8 @@ export default function RoomPage() {
   const peersRef = useRef({}); // Store peers by peerId
 
   useEffect(() => {
+    if (!user) return;
+
     const initialize = async () => {
       let videoStream = null;
       let audioStream = null;
@@ -81,18 +83,18 @@ export default function RoomPage() {
         ...(audioStream ? audioStream.getAudioTracks() : []),
       ];
 
-      console.log("Tracks:", tracks);
       const stream = new MediaStream(tracks);
       setLocalStream(stream);
 
       socketRef.current = io(import.meta.env.VITE_WS_URL);
       
       socketRef.current.on('connect', () => {
-        socketRef.current.emit("join_room", { 
+        const payload = { 
           roomId: roomCode, 
           peerId: user.id,
-          userData: { username: user.username } 
-        }, (response) => {
+          userData: { fullName: user.full_name } 
+        }
+        socketRef.current.emit("join_room", payload, (response) => {
           setHostId(response.roomHostId);
           const initialPeers = [];
           for (const [peerId, userData] of Object.entries(response.participants)) {
@@ -162,7 +164,7 @@ export default function RoomPage() {
         localStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [roomCode, user.id]);
+  }, [roomCode]);
 
   const addPeerStream = (peerId, stream) => {
     setParticipants(prev => 
@@ -270,13 +272,16 @@ export default function RoomPage() {
   };
 
   const handleSendMessage = (message) => {
-    const messageData = {
-      text: message,
-      sender: user.username,
-      peerId: socketRef.current.id,
-    };
-    socketRef.current.emit("send_chat_message", messageData);
-    setMessages((prevMessages) => [...prevMessages, messageData]);
+    if (user) {
+      const messageData = {
+        id: Date.now(),
+        text: message,
+        sender: user.full_name,
+        timestamp: new Date().toISOString(),
+      };
+      socketRef.current.emit("send_chat_message", messageData);
+      setMessages((prevMessages) => [...prevMessages, messageData]);
+    }
   };
 
   return (
@@ -299,7 +304,7 @@ export default function RoomPage() {
           <Grid item xs={12} sm={6} md={4}>
             <VideoTile
               stream={localStream}
-              username={user.username}
+              username={user.full_name}
               isHost={user.id === hostId}
               isMuted={isAudioMuted}
               isVideoOff={!hasVideoPermission || isVideoMuted}
@@ -310,7 +315,7 @@ export default function RoomPage() {
             <Grid item xs={12} sm={6} md={4} key={p.id}>
               <VideoTile
                 stream={p.stream}
-                username={p.username}
+                username={p.fullName}
                 isHost={p.id === hostId}
                 isMuted={p.isMuted}
                 isVideoOff={p.isVideoOff}
@@ -348,9 +353,7 @@ export default function RoomPage() {
       </Drawer>
     </Box>
   );
-}
-
-const PeerVideo = ({ peer }) => {
+}const PeerVideo = ({ peer }) => {
   const ref = useRef();
 
   useEffect(() => {
@@ -361,3 +364,4 @@ const PeerVideo = ({ peer }) => {
 
   return <Video playsInline autoPlay ref={ref} />;
 }; 
+

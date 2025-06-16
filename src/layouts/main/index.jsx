@@ -8,7 +8,8 @@ import {
   styled,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { logout } from "../../redux/slices/auth";
+import { logout } from "../../redux/slices/authSlice";
+import { Outlet } from "react-router-dom";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -17,7 +18,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-export default function MainLayout({ children }) {
+export default function MainLayout() {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
@@ -37,12 +38,8 @@ export default function MainLayout({ children }) {
         </Toolbar>
       </StyledAppBar>
       <Box component="main" sx={{ p: 3 }}>
-        {children}
+        <Outlet />
       </Box>
     </>
   );
-}
-
-MainLayout.propTypes = {
-  children: PropTypes.node,
-}; 
+} 

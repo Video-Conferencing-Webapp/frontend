@@ -5,6 +5,10 @@ import { Provider } from 'react-redux'
 import { store } from './redux/store'
 import { SettingsProvider } from './contexts/SettingsContext'
 import App from './App'
+import { checkAndRefreshToken } from './utils/axios'
+
+// Check for token on app startup
+checkAndRefreshToken();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

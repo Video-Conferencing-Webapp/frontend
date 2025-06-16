@@ -1,48 +1,35 @@
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-} from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "../redux/slices/auth";
-import { useSnackbar } from "notistack";
-import { useNavigate } from "react-router-dom";
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
+import { Container, Typography, TextField, Button, Stack, Link, IconButton, InputAdornment } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link as RouterLink } from 'react-router-dom';
+import { useState } from 'react';
+import { register } from '../redux/slices/authSlice';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 export default function RegisterPage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-  const { isLoading, error } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const RegisterSchema = Yup.object().shape({
-    username: Yup.string().required("Username is required"),
-    email: Yup.string()
-      .email("Email must be a valid email address")
-      .required("Email is required"),
-    password: Yup.string().required("Password is required"),
+    fullName: Yup.string().required('Full name is required'),
+    email: Yup.string().email('Email must be a valid email address').required('Email is required'),
+    password: Yup.string().required('Password is required'),
   });
 
   const {
-    register,
+    register: registerField,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(RegisterSchema),
+    defaultValues: { fullName: '', email: '', password: '' },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      await dispatch(registerUser(data));
-      enqueueSnackbar("Registration successful", { variant: "success" });
-      navigate("/login");
-    } catch (error) {
-      enqueueSnackbar(error, { variant: "error" });
-    }
+  const onSubmit = (data) => {
+    dispatch(register(data));
   };
 
   return (
@@ -54,30 +41,39 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             <TextField
-              {...register("username")}
-              label="Username"
-              error={!!errors.username}
-              helperText={errors.username?.message}
+              {...registerField('fullName')}
+              label="Full Name"
+              error={!!errors.fullName}
+              helperText={errors.fullName?.message}
             />
             <TextField
-              {...register("email")}
+              {...registerField('email')}
               label="Email address"
               error={!!errors.email}
               helperText={errors.email?.message}
             />
             <TextField
-              {...register("password")}
+              {...registerField('password')}
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               error={!!errors.password}
               helperText={errors.password?.message}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button
               fullWidth
               size="large"
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={loading}
             >
               Register
             </Button>
@@ -88,6 +84,12 @@ export default function RegisterPage() {
             {error}
           </Typography>
         )}
+        <Typography variant="body2" sx={{ mt: 3, textAlign: 'center' }}>
+          Already have an account?{' '}
+          <Link variant="subtitle2" component={RouterLink} to="/login">
+            Login
+          </Link>
+        </Typography>
       </Stack>
     </Container>
   );
