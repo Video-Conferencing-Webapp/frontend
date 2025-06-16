@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 export default function GuestGuard({ children }) {
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  if (isLoggedIn) {
+  if (isAuthenticated) {
     return <Navigate to="/" />;
   }
 

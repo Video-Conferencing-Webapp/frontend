@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Avatar, Box, Chip, IconButton, Typography, styled } from "@mui/material";
-import { Mic, MicOff } from "@mui/icons-material";
+import { Mic, MicOff, Videocam, VideocamOff } from "@mui/icons-material";
 
 const TileContainer = styled(Box)({
   position: "relative",
@@ -86,6 +86,9 @@ export default function VideoTile({
         <Box>
           <IconButton size="small" sx={{ color: "white" }} disabled>
             {isMuted ? <MicOff fontSize="small" /> : <Mic fontSize="small" />}
+          </IconButton>
+          <IconButton size="small" sx={{ color: "white" }} disabled>
+            {isVideoOff ? <VideocamOff fontSize="small" /> : <Videocam fontSize="small" />}
           </IconButton>
         </Box>
       </Overlay>

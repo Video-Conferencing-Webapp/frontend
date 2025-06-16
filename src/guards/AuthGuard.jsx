@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 
 export default function AuthGuard({ children }) {
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const { pathname } = useLocation();
 
-  if (!isLoggedIn) {
+  if (!isAuthenticated) {
     return <Navigate to={`/login?redirect=${pathname}`} />;
   }
 

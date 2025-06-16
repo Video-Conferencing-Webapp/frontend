@@ -7,18 +7,24 @@ import {
   TextField,
   Button,
   Stack,
+  Box,
+  Link,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../redux/slices/auth";
-import { useSnackbar } from "notistack";
+import { login } from "../redux/slices/authSlice";
+import { Link as RouterLink } from "react-router-dom";
+import { useState } from "react";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
-  const { isLoading, error } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    username: Yup.string().required("Username is required"),
+    email: Yup.string().email("Email must be a valid email address").required("Email is required"),
     password: Yup.string().required("Password is required"),
   });
 
@@ -28,15 +34,11 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(LoginSchema),
+    defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = async (data) => {
-    try {
-      await dispatch(loginUser(data));
-      enqueueSnackbar("Login successful", { variant: "success" });
-    } catch (error) {
-      enqueueSnackbar(error, { variant: "error" });
-    }
+  const onSubmit = (data) => {
+    dispatch(login(data));
   };
 
   return (
@@ -48,24 +50,33 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             <TextField
-              {...register("username")}
-              label="Username"
-              error={!!errors.username}
-              helperText={errors.username?.message}
+              {...register("email")}
+              label="Email address"
+              error={!!errors.email}
+              helperText={errors.email?.message}
             />
             <TextField
               {...register("password")}
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               error={!!errors.password}
               helperText={errors.password?.message}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button
               fullWidth
               size="large"
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={loading}
             >
               Login
             </Button>
@@ -76,6 +87,12 @@ export default function LoginPage() {
             {error}
           </Typography>
         )}
+        <Typography variant="body2" sx={{ mt: 3, textAlign: "center" }}>
+          Don't have an account?{" "}
+          <Link variant="subtitle2" component={RouterLink} to="/register">
+            Get started
+          </Link>
+        </Typography>
       </Stack>
     </Container>
   );

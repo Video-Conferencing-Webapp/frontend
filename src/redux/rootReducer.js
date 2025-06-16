@@ -1,5 +1,5 @@
 import { combineReducers } from "redux";
-import { reducer as authReducer } from "./slices/auth";
+import authReducer from "./slices/authSlice";
 import { reducer as roomReducer } from "./slices/room";
 
 const rootReducer = combineReducers({

@@ -1,26 +1,28 @@
-import { useRoutes, Navigate } from "react-router-dom";
-import HomePage from "../pages/HomePage";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import RoomPage from "../pages/RoomPage";
-import GuestGuard from "../guards/GuestGuard";
-import AuthGuard from "../guards/AuthGuard";
-import MainLayout from "../layouts/main";
+import { Navigate, useRoutes } from 'react-router-dom';
+import MainLayout from '../layouts/main';
+import HomePage from '../pages/HomePage';
+import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+import RoomPage from '../pages/RoomPage';
+import AuthGuard from '../guards/AuthGuard';
+import GuestGuard from '../guards/GuestGuard';
 
 export default function Router() {
   return useRoutes([
     {
-      path: "/",
+      path: '/',
       element: (
         <AuthGuard>
-          <MainLayout>
-            <HomePage />
-          </MainLayout>
+          <MainLayout />
         </AuthGuard>
       ),
+      children: [
+        { element: <HomePage />, index: true },
+        { path: 'room/:roomCode', element: <RoomPage /> },
+      ],
     },
     {
-      path: "/login",
+      path: '/login',
       element: (
         <GuestGuard>
           <LoginPage />
@@ -28,26 +30,13 @@ export default function Router() {
       ),
     },
     {
-      path: "/register",
+      path: '/register',
       element: (
         <GuestGuard>
           <RegisterPage />
         </GuestGuard>
       ),
     },
-    {
-      path: "/room/:roomCode",
-      element: (
-        <AuthGuard>
-          <MainLayout>
-            <RoomPage />
-          </MainLayout>
-        </AuthGuard>
-      ),
-    },
-    {
-      path: "*",
-      element: <Navigate to="/404" replace />,
-    },
+    { path: '*', element: <Navigate to="/404" replace /> },
   ]);
 } 
